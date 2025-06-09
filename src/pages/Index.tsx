@@ -15,7 +15,6 @@ export interface Tire {
   model: string;
   size: string;
   condition: 'new' | 'used-excellent' | 'used-good' | 'used-fair' | 'used-poor';
-  price: number;
   quantity: number;
   description?: string;
   imageUrl?: string;
@@ -31,7 +30,6 @@ const Index = () => {
       model: 'Pilot Sport 4',
       size: '225/50R17',
       condition: 'new',
-      price: 180,
       quantity: 4,
       description: 'High-performance summer tire',
       dateAdded: new Date('2024-06-01'),
@@ -43,7 +41,6 @@ const Index = () => {
       model: 'Turanza T005',
       size: '205/55R16',
       condition: 'used-good',
-      price: 85,
       quantity: 2,
       description: 'All-season touring tire, 70% tread remaining',
       dateAdded: new Date('2024-06-05'),
@@ -71,17 +68,6 @@ const Index = () => {
     tire.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
     tire.size.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const getConditionColor = (condition: string) => {
-    switch (condition) {
-      case 'new': return 'bg-green-100 text-green-800';
-      case 'used-excellent': return 'bg-blue-100 text-blue-800';
-      case 'used-good': return 'bg-yellow-100 text-yellow-800';
-      case 'used-fair': return 'bg-orange-100 text-orange-800';
-      case 'used-poor': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   if (showCamera) {
     return (

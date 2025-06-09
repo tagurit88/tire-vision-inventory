@@ -74,11 +74,8 @@ const TireCard: React.FC<TireCardProps> = ({ tire, onEdit, onDelete }) => {
         )}
         
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center">
             <span className="text-2xl font-bold text-primary">
-              ${tire.price.toFixed(2)}
-            </span>
-            <span className="text-sm text-muted-foreground">
               Qty: {tire.quantity}
             </span>
           </div>

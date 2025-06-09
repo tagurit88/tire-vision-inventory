@@ -23,7 +23,6 @@ const TireEntryForm: React.FC<TireEntryFormProps> = ({ onSubmit, onCancel, initi
       model: initialData?.model || '',
       size: initialData?.size || '',
       condition: initialData?.condition || 'new',
-      price: initialData?.price || 0,
       quantity: initialData?.quantity || 1,
       description: initialData?.description || '',
       location: initialData?.location || '',
@@ -121,26 +120,8 @@ const TireEntryForm: React.FC<TireEntryFormProps> = ({ onSubmit, onCancel, initi
                 </div>
               </div>
 
-              {/* Price and Quantity */}
+              {/* Quantity and Location */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="price">Price ($) *</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    {...register('price', { 
-                      required: 'Price is required',
-                      min: { value: 0, message: 'Price must be positive' }
-                    })}
-                  />
-                  {errors.price && (
-                    <p className="text-sm text-destructive">{errors.price.message}</p>
-                  )}
-                </div>
-                
                 <div className="space-y-2">
                   <Label htmlFor="quantity">Quantity *</Label>
                   <Input
@@ -157,16 +138,15 @@ const TireEntryForm: React.FC<TireEntryFormProps> = ({ onSubmit, onCancel, initi
                     <p className="text-sm text-destructive">{errors.quantity.message}</p>
                   )}
                 </div>
-              </div>
 
-              {/* Location */}
-              <div className="space-y-2">
-                <Label htmlFor="location">Storage Location</Label>
-                <Input
-                  id="location"
-                  placeholder="e.g., Warehouse A, Shop Floor, Section B2"
-                  {...register('location')}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="location">Storage Location</Label>
+                  <Input
+                    id="location"
+                    placeholder="e.g., Warehouse A, Shop Floor, Section B2"
+                    {...register('location')}
+                  />
+                </div>
               </div>
 
               {/* Description */}
