@@ -1,11 +1,186 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from 'react';
+import { Camera, Plus, Search, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import CameraCapture from '@/components/CameraCapture';
+import TireEntryForm from '@/components/TireEntryForm';
+import TireCard from '@/components/TireCard';
+
+export interface Tire {
+  id: string;
+  brand: string;
+  model: string;
+  size: string;
+  condition: 'new' | 'used-excellent' | 'used-good' | 'used-fair' | 'used-poor';
+  price: number;
+  quantity: number;
+  description?: string;
+  imageUrl?: string;
+  dateAdded: Date;
+  location?: string;
+}
 
 const Index = () => {
+  const [tires, setTires] = useState<Tire[]>([
+    {
+      id: '1',
+      brand: 'Michelin',
+      model: 'Pilot Sport 4',
+      size: '225/50R17',
+      condition: 'new',
+      price: 180,
+      quantity: 4,
+      description: 'High-performance summer tire',
+      dateAdded: new Date('2024-06-01'),
+      location: 'Warehouse A'
+    },
+    {
+      id: '2',
+      brand: 'Bridgestone',
+      model: 'Turanza T005',
+      size: '205/55R16',
+      condition: 'used-good',
+      price: 85,
+      quantity: 2,
+      description: 'All-season touring tire, 70% tread remaining',
+      dateAdded: new Date('2024-06-05'),
+      location: 'Shop Floor'
+    }
+  ]);
+  
+  const [showCamera, setShowCamera] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleAddTire = (newTire: Omit<Tire, 'id' | 'dateAdded'>) => {
+    const tire: Tire = {
+      ...newTire,
+      id: Date.now().toString(),
+      dateAdded: new Date()
+    };
+    setTires(prev => [tire, ...prev]);
+    setShowForm(false);
+    setShowCamera(false);
+  };
+
+  const filteredTires = tires.filter(tire =>
+    tire.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tire.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tire.size.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const getConditionColor = (condition: string) => {
+    switch (condition) {
+      case 'new': return 'bg-green-100 text-green-800';
+      case 'used-excellent': return 'bg-blue-100 text-blue-800';
+      case 'used-good': return 'bg-yellow-100 text-yellow-800';
+      case 'used-fair': return 'bg-orange-100 text-orange-800';
+      case 'used-poor': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (showCamera) {
+    return (
+      <CameraCapture
+        onCapture={(imageUrl) => {
+          setShowCamera(false);
+          setShowForm(true);
+        }}
+        onCancel={() => setShowCamera(false)}
+      />
+    );
+  }
+
+  if (showForm) {
+    return (
+      <TireEntryForm
+        onSubmit={handleAddTire}
+        onCancel={() => setShowForm(false)}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="bg-card border-b border-border">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Tire Inventory</h1>
+              <p className="text-muted-foreground mt-1">Manage your tire stock efficiently</p>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-foreground">{tires.length}</div>
+              <div className="text-sm text-muted-foreground">Total Items</div>
+            </div>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              onClick={() => setShowCamera(true)}
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+              size="lg"
+            >
+              <Camera className="mr-2 h-5 w-5" />
+              Take Photo
+            </Button>
+            <Button 
+              onClick={() => setShowForm(true)}
+              variant="outline"
+              className="flex-1"
+              size="lg"
+            >
+              <Plus className="mr-2 h-5 w-5" />
+              Manual Entry
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search by brand, model, or size..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Button variant="outline" size="default">
+            <Filter className="mr-2 h-4 w-4" />
+            Filter
+          </Button>
+        </div>
+
+        {/* Inventory Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredTires.map((tire) => (
+            <TireCard
+              key={tire.id}
+              tire={tire}
+              onEdit={() => {}}
+              onDelete={() => {}}
+            />
+          ))}
+        </div>
+
+        {filteredTires.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-muted-foreground text-lg">No tires found</div>
+            <p className="text-muted-foreground mt-2">
+              {searchTerm ? 'Try adjusting your search terms' : 'Start by adding your first tire'}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
