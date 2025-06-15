@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Camera, Plus, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -91,9 +90,9 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-card border-b border-border">
+      <div className="bg-white border-b border-border">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-6">
             <div>
