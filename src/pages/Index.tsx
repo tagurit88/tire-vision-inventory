@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Camera, Plus, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -90,26 +91,26 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <div className="bg-white border-b border-border">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Tire Inventory</h1>
-              <p className="text-muted-foreground mt-1">Manage your tire stock efficiently</p>
+    <div className="min-h-screen bg-gray-100 touch-manipulation">
+      {/* Header - Optimized for mobile */}
+      <div className="bg-white border-b border-border sticky top-0 z-10 shadow-sm">
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground truncate">Tire Inventory</h1>
+              <p className="text-sm sm:text-base text-muted-foreground mt-1 hidden sm:block">Manage your tire stock efficiently</p>
             </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-foreground">{tires.length}</div>
-              <div className="text-sm text-muted-foreground">Total Items</div>
+            <div className="text-right ml-4">
+              <div className="text-xl sm:text-2xl font-bold text-foreground">{tires.length}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Total Items</div>
             </div>
           </div>
           
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          {/* Action Buttons - Mobile optimized */}
+          <div className="flex flex-col gap-3">
             <Button 
               onClick={() => setShowCamera(true)}
-              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-base font-medium"
               size="lg"
             >
               <Camera className="mr-2 h-5 w-5" />
@@ -118,7 +119,7 @@ const Index = () => {
             <Button 
               onClick={() => setShowForm(true)}
               variant="outline"
-              className="flex-1"
+              className="w-full h-12 text-base font-medium"
               size="lg"
             >
               <Plus className="mr-2 h-5 w-5" />
@@ -128,26 +129,26 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
+      {/* Search and Filters - Mobile optimized */}
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4">
+        <div className="flex flex-col gap-3">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Search by brand, model, or size..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-12 text-base"
             />
           </div>
-          <Button variant="outline" size="default">
+          <Button variant="outline" size="default" className="w-full h-12 text-base">
             <Filter className="mr-2 h-4 w-4" />
             Filter
           </Button>
         </div>
 
-        {/* Inventory Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Inventory Grid - Mobile responsive */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-6">
           {filteredTires.map((tire) => (
             <TireCard
               key={tire.id}
@@ -159,9 +160,9 @@ const Index = () => {
         </div>
 
         {filteredTires.length === 0 && (
-          <div className="text-center py-12">
+          <div className="text-center py-12 px-4">
             <div className="text-muted-foreground text-lg">No tires found</div>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base">
               {searchTerm ? 'Try adjusting your search terms' : 'Start by adding your first tire'}
             </p>
           </div>

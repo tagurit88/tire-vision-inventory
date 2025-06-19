@@ -85,23 +85,23 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel }) =>
   };
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
-      {/* Header */}
-      <div className="bg-black/80 text-white p-4 flex items-center justify-between">
+    <div className="fixed inset-0 bg-black z-50 flex flex-col safe-area-inset">
+      {/* Header - Mobile optimized */}
+      <div className="bg-black/80 text-white p-4 flex items-center justify-between safe-area-top">
         <Button
           variant="ghost"
           size="sm"
           onClick={handleCancel}
-          className="text-white hover:bg-white/20"
+          className="text-white hover:bg-white/20 h-10 w-10 p-0"
         >
           <X className="h-5 w-5" />
         </Button>
         <h2 className="text-lg font-semibold">Capture Tire Photo</h2>
-        <div className="w-8" />
+        <div className="w-10" />
       </div>
 
-      {/* Camera View */}
-      <div className="flex-1 relative flex items-center justify-center">
+      {/* Camera View - Full screen on mobile */}
+      <div className="flex-1 relative flex items-center justify-center overflow-hidden">
         {isLoading ? (
           <div className="text-white text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
@@ -122,9 +122,9 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel }) =>
               muted
               className="w-full h-full object-cover"
             />
-            {/* Camera overlay */}
+            {/* Camera overlay - Responsive */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="border-2 border-white rounded-lg w-80 h-80 opacity-50"></div>
+              <div className="border-2 border-white rounded-lg w-64 h-64 sm:w-80 sm:h-80 opacity-50"></div>
             </div>
           </>
         )}
@@ -132,15 +132,15 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel }) =>
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
-      {/* Controls */}
-      <div className="bg-black/80 p-6">
+      {/* Controls - Mobile optimized with larger touch targets */}
+      <div className="bg-black/80 p-6 safe-area-bottom">
         {capturedImage ? (
-          <div className="flex justify-center gap-4">
+          <div className="flex justify-center gap-6">
             <Button
               variant="outline"
               size="lg"
               onClick={retakePhoto}
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20 h-14 px-8"
             >
               <RotateCcw className="mr-2 h-5 w-5" />
               Retake
@@ -148,7 +148,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel }) =>
             <Button
               size="lg"
               onClick={confirmCapture}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-green-600 hover:bg-green-700 text-white h-14 px-8"
             >
               <Check className="mr-2 h-5 w-5" />
               Use Photo
@@ -160,7 +160,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel }) =>
               size="lg"
               onClick={capturePhoto}
               disabled={!stream}
-              className="bg-white text-black hover:bg-gray-200 rounded-full w-16 h-16 p-0"
+              className="bg-white text-black hover:bg-gray-200 rounded-full w-20 h-20 p-0 touch-manipulation"
             >
               <Camera className="h-8 w-8" />
             </Button>
