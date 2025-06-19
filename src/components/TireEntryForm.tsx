@@ -8,7 +8,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from '@/components/ui/use-toast';
 import type { Tire } from '@/pages/Index';
+import { 
+  sanitizeInput, 
+  sanitizeTireDescription, 
+  validateTireSize, 
+  validateImageData, 
+  validateImageSize,
+  validateRequiredField,
+  validateQuantity
+} from '@/utils/security';
 
 interface TireEntryFormProps {
   onSubmit: (tire: Omit<Tire, 'id' | 'dateAdded'>) => void;
@@ -33,7 +43,65 @@ const TireEntryForm: React.FC<TireEntryFormProps> = ({ onSubmit, onCancel, initi
   const condition = watch('condition');
 
   const onFormSubmit = (data: Omit<Tire, 'id' | 'dateAdded'>) => {
-    onSubmit(data);
+    console.log('Validating form data...');
+    
+    // Security validation
+    const brandError = validateRequiredField(data.brand, 'Brand');
+    const sizeError = validateRequiredField(data.size, 'Size');
+    const quantityError = validateQuantity(data.quantity);
+    
+    if (brandError || sizeError || quantityError) {
+      toast({
+        title: "Validation Error",
+        description: brandError || sizeError || quantityError || "Please check your input",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validate tire size format
+    if (!validateTireSize(data.size)) {
+      toast({
+        title: "Invalid Tire Size",
+        description: "Please enter a valid tire size format (e.g., 225/50R17)",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validate image if provided
+    if (data.imageUrl) {
+      if (!validateImageData(data.imageUrl)) {
+        toast({
+          title: "Invalid Image",
+          description: "Please provide a valid image",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (!validateImageSize(data.imageUrl)) {
+        toast({
+          title: "Image Too Large",
+          description: "Image size must be less than 5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+    
+    // Sanitize all string inputs
+    const sanitizedData = {
+      ...data,
+      brand: sanitizeInput(data.brand),
+      model: sanitizeInput(data.model),
+      size: sanitizeInput(data.size),
+      description: sanitizeTireDescription(data.description || ''),
+      location: sanitizeInput(data.location || '')
+    };
+    
+    console.log('Form validation passed, submitting sanitized data');
+    onSubmit(sanitizedData);
   };
 
   const conditionOptions = [
@@ -69,7 +137,10 @@ const TireEntryForm: React.FC<TireEntryFormProps> = ({ onSubmit, onCancel, initi
                   <Input
                     id="brand"
                     placeholder="e.g., Michelin, Bridgestone"
-                    {...register('brand', { required: 'Brand is required' })}
+                    {...register('brand', { 
+                      required: 'Brand is required',
+                      maxLength: { value: 50, message: 'Brand name too long' }
+                    })}
                   />
                   {errors.brand && (
                     <p className="text-sm text-destructive">{errors.brand.message}</p>
@@ -81,8 +152,13 @@ const TireEntryForm: React.FC<TireEntryFormProps> = ({ onSubmit, onCancel, initi
                   <Input
                     id="model"
                     placeholder="e.g., Pilot Sport 4"
-                    {...register('model')}
+                    {...register('model', {
+                      maxLength: { value: 50, message: 'Model name too long' }
+                    })}
                   />
+                  {errors.model && (
+                    <p className="text-sm text-destructive">{errors.model.message}</p>
+                  )}
                 </div>
               </div>
 
@@ -93,7 +169,10 @@ const TireEntryForm: React.FC<TireEntryFormProps> = ({ onSubmit, onCancel, initi
                   <Input
                     id="size"
                     placeholder="e.g., 225/50R17"
-                    {...register('size', { required: 'Size is required' })}
+                    {...register('size', { 
+                      required: 'Size is required',
+                      maxLength: { value: 20, message: 'Size format too long' }
+                    })}
                   />
                   {errors.size && (
                     <p className="text-sm text-destructive">{errors.size.message}</p>
@@ -128,10 +207,12 @@ const TireEntryForm: React.FC<TireEntryFormProps> = ({ onSubmit, onCancel, initi
                     id="quantity"
                     type="number"
                     min="1"
+                    max="10000"
                     placeholder="1"
                     {...register('quantity', { 
                       required: 'Quantity is required',
-                      min: { value: 1, message: 'Quantity must be at least 1' }
+                      min: { value: 1, message: 'Quantity must be at least 1' },
+                      max: { value: 10000, message: 'Quantity cannot exceed 10,000' }
                     })}
                   />
                   {errors.quantity && (
@@ -144,8 +225,13 @@ const TireEntryForm: React.FC<TireEntryFormProps> = ({ onSubmit, onCancel, initi
                   <Input
                     id="location"
                     placeholder="e.g., Warehouse A, Shop Floor, Section B2"
-                    {...register('location')}
+                    {...register('location', {
+                      maxLength: { value: 100, message: 'Location name too long' }
+                    })}
                   />
+                  {errors.location && (
+                    <p className="text-sm text-destructive">{errors.location.message}</p>
+                  )}
                 </div>
               </div>
 
@@ -156,8 +242,13 @@ const TireEntryForm: React.FC<TireEntryFormProps> = ({ onSubmit, onCancel, initi
                   id="description"
                   placeholder="Additional notes about the tire condition, tread depth, etc."
                   className="min-h-[100px]"
-                  {...register('description')}
+                  {...register('description', {
+                    maxLength: { value: 500, message: 'Description too long (max 500 characters)' }
+                  })}
                 />
+                {errors.description && (
+                  <p className="text-sm text-destructive">{errors.description.message}</p>
+                )}
               </div>
 
               {/* Submit Buttons */}

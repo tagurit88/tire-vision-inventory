@@ -12,9 +12,19 @@ const config: CapacitorConfig = {
   plugins: {
     Camera: {
       permissions: {
-        camera: "Camera access is required to take photos of tires"
+        camera: "Camera access is required to take photos of tires for inventory management"
       }
     }
+  },
+  // Security configurations for mobile deployment
+  android: {
+    allowMixedContent: false,
+    captureInput: true,
+    webContentsDebuggingEnabled: false
+  },
+  ios: {
+    contentInset: 'automatic',
+    scrollEnabled: true
   }
 };
 
