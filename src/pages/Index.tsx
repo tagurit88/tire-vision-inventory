@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import CameraCapture from '@/components/CameraCapture';
 import TireEntryForm from '@/components/TireEntryForm';
 import TireCard from '@/components/TireCard';
@@ -50,32 +51,44 @@ const Index = () => {
   
   const [showCamera, setShowCamera] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [capturedImageUrl, setCapturedImageUrl] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterCondition, setFilterCondition] = useState<string>('all');
 
   const handleAddTire = (newTire: Omit<Tire, 'id' | 'dateAdded'>) => {
     const tire: Tire = {
       ...newTire,
       id: Date.now().toString(),
-      dateAdded: new Date()
+      dateAdded: new Date(),
+      imageUrl: capturedImageUrl || newTire.imageUrl
     };
     setTires(prev => [tire, ...prev]);
     setShowForm(false);
     setShowCamera(false);
+    setCapturedImageUrl(null);
   };
 
-  const filteredTires = tires.filter(tire =>
-    tire.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tire.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tire.size.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleCameraCapture = (imageUrl: string) => {
+    console.log('Camera captured image:', imageUrl);
+    setCapturedImageUrl(imageUrl);
+    setShowCamera(false);
+    setShowForm(true);
+  };
+
+  const filteredTires = tires.filter(tire => {
+    const matchesSearch = tire.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tire.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tire.size.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesFilter = filterCondition === 'all' || tire.condition === filterCondition;
+    
+    return matchesSearch && matchesFilter;
+  });
 
   if (showCamera) {
     return (
       <CameraCapture
-        onCapture={(imageUrl) => {
-          setShowCamera(false);
-          setShowForm(true);
-        }}
+        onCapture={handleCameraCapture}
         onCancel={() => setShowCamera(false)}
       />
     );
@@ -85,7 +98,11 @@ const Index = () => {
     return (
       <TireEntryForm
         onSubmit={handleAddTire}
-        onCancel={() => setShowForm(false)}
+        onCancel={() => {
+          setShowForm(false);
+          setCapturedImageUrl(null);
+        }}
+        initialImageUrl={capturedImageUrl}
       />
     );
   }
@@ -101,7 +118,7 @@ const Index = () => {
               <p className="text-sm sm:text-base text-muted-foreground mt-1 hidden sm:block">Manage your tire stock efficiently</p>
             </div>
             <div className="text-right ml-4">
-              <div className="text-xl sm:text-2xl font-bold text-foreground">{tires.length}</div>
+              <div className="text-xl sm:text-2xl font-bold text-foreground">{filteredTires.length}</div>
               <div className="text-xs sm:text-sm text-muted-foreground">Total Items</div>
             </div>
           </div>
@@ -141,10 +158,64 @@ const Index = () => {
               className="pl-10 h-12 text-base"
             />
           </div>
-          <Button variant="outline" size="default" className="w-full h-12 text-base">
-            <Filter className="mr-2 h-4 w-4" />
-            Filter
-          </Button>
+          
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="default" className="w-full h-12 text-base">
+                <Filter className="mr-2 h-4 w-4" />
+                Filter {filterCondition !== 'all' && `(${filterCondition})`}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[300px]">
+              <SheetHeader>
+                <SheetTitle>Filter by Condition</SheetTitle>
+              </SheetHeader>
+              <div className="grid grid-cols-2 gap-3 mt-6">
+                <Button
+                  variant={filterCondition === 'all' ? 'default' : 'outline'}
+                  onClick={() => setFilterCondition('all')}
+                  className="h-12"
+                >
+                  All
+                </Button>
+                <Button
+                  variant={filterCondition === 'new' ? 'default' : 'outline'}
+                  onClick={() => setFilterCondition('new')}
+                  className="h-12"
+                >
+                  New
+                </Button>
+                <Button
+                  variant={filterCondition === 'used-excellent' ? 'default' : 'outline'}
+                  onClick={() => setFilterCondition('used-excellent')}
+                  className="h-12"
+                >
+                  Used - Excellent
+                </Button>
+                <Button
+                  variant={filterCondition === 'used-good' ? 'default' : 'outline'}
+                  onClick={() => setFilterCondition('used-good')}
+                  className="h-12"
+                >
+                  Used - Good
+                </Button>
+                <Button
+                  variant={filterCondition === 'used-fair' ? 'default' : 'outline'}
+                  onClick={() => setFilterCondition('used-fair')}
+                  className="h-12"
+                >
+                  Used - Fair
+                </Button>
+                <Button
+                  variant={filterCondition === 'used-poor' ? 'default' : 'outline'}
+                  onClick={() => setFilterCondition('used-poor')}
+                  className="h-12"
+                >
+                  Used - Poor
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
 
         {/* Inventory Grid - Mobile responsive */}
@@ -163,7 +234,7 @@ const Index = () => {
           <div className="text-center py-12 px-4">
             <div className="text-muted-foreground text-lg">No tires found</div>
             <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-              {searchTerm ? 'Try adjusting your search terms' : 'Start by adding your first tire'}
+              {searchTerm || filterCondition !== 'all' ? 'Try adjusting your search terms or filters' : 'Start by adding your first tire'}
             </p>
           </div>
         )}

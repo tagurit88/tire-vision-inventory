@@ -2,7 +2,6 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { Camera, X, RotateCcw, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 
 interface CameraCaptureProps {
   onCapture: (imageUrl: string) => void;
@@ -13,35 +12,47 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel }) =>
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const startCamera = useCallback(async () => {
     try {
       setIsLoading(true);
+      setError(null);
+      console.log('Starting camera...');
+      
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { 
-          facingMode: 'environment', // Use back camera on mobile
+          facingMode: 'environment',
           width: { ideal: 1280 },
           height: { ideal: 720 }
         }
       });
       
+      console.log('Camera stream obtained:', mediaStream);
+      
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        await videoRef.current.play();
         setStream(mediaStream);
+        console.log('Video playing');
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
-      // Fallback to file input if camera access fails
+      setError('Camera access denied. Please allow camera permissions and try again.');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   const stopCamera = useCallback(() => {
+    console.log('Stopping camera...');
     if (stream) {
-      stream.getTracks().forEach(track => track.stop());
+      stream.getTracks().forEach(track => {
+        track.stop();
+        console.log('Stopped track:', track);
+      });
       setStream(null);
     }
   }, [stream]);
@@ -52,23 +63,32 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel }) =>
   }, [startCamera, stopCamera]);
 
   const capturePhoto = () => {
+    console.log('Capturing photo...');
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
       
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      
-      if (context) {
+      if (context && video.videoWidth > 0 && video.videoHeight > 0) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
         context.drawImage(video, 0, 0);
         const imageUrl = canvas.toDataURL('image/jpeg', 0.8);
+        console.log('Photo captured, data URL length:', imageUrl.length);
         setCapturedImage(imageUrl);
+      } else {
+        console.error('Cannot capture photo: video not ready or context not available');
+        setError('Cannot capture photo. Please ensure camera is working.');
       }
+    } else {
+      console.error('Video or canvas ref not available');
+      setError('Camera not ready. Please try again.');
     }
   };
 
   const confirmCapture = () => {
+    console.log('Confirming capture...');
     if (capturedImage) {
       onCapture(capturedImage);
       stopCamera();
@@ -76,10 +96,13 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel }) =>
   };
 
   const retakePhoto = () => {
+    console.log('Retaking photo...');
     setCapturedImage(null);
+    setError(null);
   };
 
   const handleCancel = () => {
+    console.log('Canceling camera...');
     stopCamera();
     onCancel();
   };
@@ -102,7 +125,14 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel }) =>
 
       {/* Camera View - Full screen on mobile */}
       <div className="flex-1 relative flex items-center justify-center overflow-hidden">
-        {isLoading ? (
+        {error ? (
+          <div className="text-white text-center p-4">
+            <p className="mb-4">{error}</p>
+            <Button onClick={startCamera} variant="outline" className="text-white border-white">
+              Try Again
+            </Button>
+          </div>
+        ) : isLoading ? (
           <div className="text-white text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
             <p>Starting camera...</p>
@@ -121,6 +151,11 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel }) =>
               playsInline
               muted
               className="w-full h-full object-cover"
+              onLoadedMetadata={() => console.log('Video metadata loaded')}
+              onError={(e) => {
+                console.error('Video error:', e);
+                setError('Video playback error. Please try again.');
+              }}
             />
             {/* Camera overlay - Responsive */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -159,8 +194,8 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onCancel }) =>
             <Button
               size="lg"
               onClick={capturePhoto}
-              disabled={!stream}
-              className="bg-white text-black hover:bg-gray-200 rounded-full w-20 h-20 p-0 touch-manipulation"
+              disabled={!stream || isLoading || !!error}
+              className="bg-white text-black hover:bg-gray-200 rounded-full w-20 h-20 p-0 touch-manipulation disabled:opacity-50"
             >
               <Camera className="h-8 w-8" />
             </Button>
