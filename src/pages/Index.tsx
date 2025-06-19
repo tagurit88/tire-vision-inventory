@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Camera, Plus, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -102,7 +101,7 @@ const Index = () => {
           setShowForm(false);
           setCapturedImageUrl(null);
         }}
-        initialImageUrl={capturedImageUrl}
+        initialData={capturedImageUrl ? { imageUrl: capturedImageUrl } : undefined}
       />
     );
   }
